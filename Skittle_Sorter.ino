@@ -381,7 +381,7 @@ bool checkRange(byte tableRow, byte scanType, byte lowRange, byte highRange)
 //>>>    Serial.print("--checking ");
 //>>>    Serial.print(sensorName[scanType]);
 //>>>    Serial.print(" sensor value ");
-//>>>    Serial.print(sensorValue[scanType]);
+//>>>    Serial.print(sensorValue[scanType]); 
 //>>>    Serial.print(" is between ");
 //>>>    Serial.print(colorValues[tableRow][lowRange]);
 //>>>    Serial.print("-");
