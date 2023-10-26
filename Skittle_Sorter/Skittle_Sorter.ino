@@ -52,7 +52,9 @@ Servo decisionServo;
 
 const int distinctRGB[22][3] = {{255, 255, 255},{0,0,0},{128,0,0},{255,0,0},{255, 200, 220},{170, 110, 40},{255, 150, 0},{255, 215, 180},{128, 128, 0},{255, 235, 0},{255, 250, 200},{190, 255, 0},{0, 190, 0},{170, 255, 195},{0, 0, 128},{100, 255, 255},{0, 0, 128},{67, 133, 255},{130, 0, 150},{230, 190, 255},{255, 0, 255},{128, 128, 128}};
 const String distinctColors[22] = {"white","black","maroon","red","pink","brown","orange","coral","olive","yellow","beige","lime","green","mint","teal","cyan","navy","blue","purple","lavender","magenta","grey"};
-String closestColor(int r,int g,int b) {
+
+// Match the closest named color to a passed R G B value set
+String closestColor(int r, int g, int b) {
   String colorReturn = "NA";
   int biggestDifference = 1000;
   for (int i = 0; i < 22; i++) {
@@ -63,6 +65,7 @@ String closestColor(int r,int g,int b) {
   }
   return colorReturn;
 }
+
 //
 //  FILL THIS SET OF VALUES WITH THE NUMBERS FROM THE
 //  Skittle_Color_Calibration
@@ -110,8 +113,7 @@ void identifyTheColor();
 bool checkEachColor();
 bool checkRange();
 
-void setup()
-  {
+void setup() {
   //Set the pins of the Color Sensor
   pinMode(s0, OUTPUT);
   pinMode(s1, OUTPUT);
@@ -120,13 +122,13 @@ void setup()
   pinMode(sOut, INPUT);
 
 
-//  The pins S0 & S1 used for frequency scaling
-//    S0  S1
-//    L - L = Power Down
-//    L - H = 2%
-//    H - L = 20%
-//    H - H = 100%
-//
+  //  The pins S0 & S1 used for frequency scaling
+  //    S0  S1
+  //    L - L = Power Down
+  //    L - H = 2%
+  //    H - L = 20%
+  //    H - H = 100%
+  //
   
   //Setting frequency
   digitalWrite(s0, HIGH);
@@ -142,11 +144,8 @@ void setup()
 
   // position the feeder and decision servos initially
   // feeder servo half way between pos1 and pos2
-  byte tempPos = (((pos1FeederServo - pos2FeederServo) / 2) + pos2FeederServo);
-  feedingServo.write(tempPos);
-  
-  // decision servo at the green bucket
-  decisionServo.write (decisionServo_GREEN);
+  feedingServo.write(((pos1FeederServo - pos2FeederServo) / 2) + pos2FeederServo); 
+  decisionServo.write(decisionServo_GREEN);
 
   // wait 15 seconds to allow loading of skittles
   Serial.println("Waiting for setup of skittles");
@@ -158,123 +157,100 @@ void setup()
 
 }
 
-void loop()
-  {
-
-
-  Serial.println("------WAT------");
-  Serial.println(closestColor(230, 10, 10));
-// show moving feeder servo
-//>>>  Serial.println("moving feeder to sensor position");
+void loop() {
     
-//Write "steps" of 1 degree to the servo until pos2 (Sensor position)
-  for (int i = pos1FeederServo; i > pos2FeederServo ; i--)
-    {
-    feedingServo.write (i);
-    delay (mediumDelay);
-    }
+  // Write "steps" of 1 degree to the servo until pos2 (Sensor position)
+  for (int i = pos1FeederServo; i > pos2FeederServo ; i--) {
+    feedingServo.write(i);
+    delay(mediumDelay);
+  }
 
-//Delay to stabilize readings
+  //Delay to stabilize readings
   delay(bigDelay);
 
-//  scan the color using the sensor to get red, blue, green & clear values
-//  and store tham in the global array sensorValue
+  // scan the color using the sensor to get red, blue, green & clear values
+  // and store tham in the global array sensorValue
   scanTheColor();
 
-//  Use the colorValues table to identify the color
+  // Use the colorValues table to identify the color
   identifyTheColor();
   
-//Switch Case to decide which color are we reading
-  switch (identifiedColor)
-  {    
-//Case for Red
-  case 1:
-//>>>    Serial.println("moving decision servo to the red bucket");
-    decisionServo.write (decisionServo_RED);    // move the slide to the red bucket
-    Serial.write(identifiedColor);              // send the color to the second Arduino
-    break;
+  // Switch Case to decide which color are we reading
+  switch (identifiedColor) {    
+    //Case for Red
+    case 1:
+      decisionServo.write (decisionServo_RED);    // move the slide to the red bucket
+      Serial.write(identifiedColor);              // send the color to the second Arduino
+      break;
 
-//Case for Yellow
-  case 2:
-//>>>    Serial.println("moving decision servo to the yellow bucket");
-    decisionServo.write (decisionServo_YELLOW);
-    Serial.write(identifiedColor);
-    break;
+    // Case for Yellow
+    case 2:
+      decisionServo.write (decisionServo_YELLOW);
+      Serial.write(identifiedColor);
+      break;
 
-//Case for Green
-  case 3:
-//>>>    Serial.println("moving decision servo to the green bucket");
-    decisionServo.write (decisionServo_GREEN);
-    Serial.write(identifiedColor);
-    break;
+    // Case for Green
+    case 3:
+      decisionServo.write (decisionServo_GREEN);
+      Serial.write(identifiedColor);
+      break;
 
-//Case for Orange
-  case 4:
-//>>>    Serial.println("moving decision servo to the orange bucket");
-    decisionServo.write (decisionServo_ORANGE);
-    Serial.write(identifiedColor);
-    break;
+    //Case for Orange
+    case 4:
+      decisionServo.write (decisionServo_ORANGE);
+      Serial.write(identifiedColor);
+      break;
 
-//Case for Purple
-  case 5:
-//>>>    Serial.println("moving decision servo to the purple bucket");
-    decisionServo.write (decisionServo_PURPLE);
-    Serial.write(identifiedColor);
-    break;
+    //Case for Purple
+    case 5:
+      decisionServo.write (decisionServo_PURPLE);
+      Serial.write(identifiedColor);
+      break;
 
-//Case DEFAULT
-  default:
-    Serial.println("Did not identify any color, dumping in purple bucket");
-    Serial.println();
-    decisionServo.write (decisionServo_PURPLE);
+    //Case DEFAULT
+    default:
+      Serial.println("Did not identify any color, dumping in purple bucket");
+      Serial.println();
+      decisionServo.write (decisionServo_PURPLE);
   }
 
-//Delay before moving to exit position
+  // Delay before moving to exit position
   delay(bigDelay);
 
-// Move Feeding servo to exit (drop position)
-//>>>  Serial.println("moving feeding servo to exit position");
-  
-  for (int i = pos2FeederServo; i > pos3FeederServo; i--)
-    {
-    feedingServo.write (i);
-    delay (mediumDelay);
-    }
+  // Move Feeding servo to exit (drop position)  
+  for (int i = pos2FeederServo; i > pos3FeederServo; i--) {
+    feedingServo.write(i);
+    delay(mediumDelay);
+  }
  
-// Delay before returning feeder to the get skittle position
+  // Delay before returning feeder to the get skittle position
   delay(bigDelay);
 
-// Return the Feeding Servo to initial (get skittle position)
-//>>>  Serial.println("moving feeding servo to get another skittle");
-  
-  for (int i = pos3FeederServo; i < pos1FeederServo ; i++)
-    {
-    feedingServo.write (i);
+  // Return the Feeding Servo to initial (get skittle position)
+  for (int i = pos3FeederServo; i < pos1FeederServo ; i++) {
+    feedingServo.write(i);
     delay (smallDelay);
-    }
+  }
 
-// reset color
+  // reset color
   identifiedColor = 0;
 
-// delay before getting another skittle
+  // delay before getting another skittle
   delay (veryBigDelay);
   
-  }
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //
 //  read the sensor to get the red, green, blue & clear values nd store in scannedValue array
 //
 //////////////////////////////////////////////////////////////////////////////////////////
-void  scanTheColor()
-  {
+void  scanTheColor() {
     
-// red    uses pinVal 0,0
-// green  uses pinVal 0,1
-// blue   uses pinVal 1,0
-// clear  uses pinVal 1,1
-
-//>>>  Serial.println("scanning the color ");
+  // red    uses pinVal 0,0
+  // green  uses pinVal 0,1
+  // blue   uses pinVal 1,0
+  // clear  uses pinVal 1,1
 
   pinVal1 = 0;
   pinVal2 = 0;
@@ -295,8 +271,7 @@ void  scanTheColor()
     zColor = 0;     // clear the variable to hold the sensor value
     
     Serial.print("Z=");
-    for (byte y = 0; y < scanCnt; y++)
-    {
+    for (byte y = 0; y < scanCnt; y++) {
       zColor = pulseIn(sOut, LOW);
       
       Serial.print(zColor);
@@ -313,51 +288,42 @@ void  scanTheColor()
     Serial.print(sensorName[x]);
     Serial.print("=");
     Serial.print(sensorValue[x]);
-//>>>    Serial.print(" stored in sensorValue pos ");
-//>>>    Serial.print(x);
     Serial.println();
 
-// toggle the bits to get the next value
+    // toggle the bits to get the next value
     pinVal1 = pinVal1 | pinVal2;
     pinVal2 = pinVal2 ^ 1;
 
     delay(smallDelay);
-    }
-
-    // sensorValue[0], 1, 2, 3
-    Serial.print(sensorValue[0]); Serial.print(", ");
-    Serial.print(sensorValue[1]); Serial.print(", ");
-    Serial.print(sensorValue[2]);Serial.print(", ");
-    colorIFound = closestColor(sensorValue[0], sensorValue[1], sensorValue[2]);
-    Serial.println("------------------------------------------");
-    Serial.println(colorIFound);
-        Serial.println();
-    // RIGHT HERE
   }
+
+  // sensorValue[0], 1, 2, 3
+  Serial.print(sensorValue[0]); Serial.print(", ");
+  Serial.print(sensorValue[1]); Serial.print(", ");
+  Serial.print(sensorValue[2]); Serial.print(", ");
+
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // check to see if the values scanned match a color of skittle
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-void  identifyTheColor()
-  {
-    for (byte skittleColor=0; skittleColor <= 4; skittleColor++)
-    {
-      if (checkEachColor(skittleColor))
-        {
-          identifiedColor = skittleColor + 1; //add one to color for switch-case statement
-          Serial.print("identified ");
-          Serial.println(skittleName[skittleColor]);
-          Serial.println();
-          return;
-        }
-        else
-        {
-          identifiedColor = 0;
-        }
+void  identifyTheColor() {
+  for (byte skittleColor=0; skittleColor <= 4; skittleColor++) {
+    if (checkEachColor(skittleColor)) {
+      identifiedColor = skittleColor + 1; //add one to color for switch-case statement
+      Serial.print("identified ");
+      Serial.println(skittleName[skittleColor]);
+      Serial.println();
+      return;
+    } else {
+      identifiedColor = 0;
     }
   }
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -430,4 +396,3 @@ bool checkRange(byte tableRow, byte scanType, byte lowRange, byte highRange)
         return false;
     }
   }
-/////////////////////////////////////////////////////////////////
