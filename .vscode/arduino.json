@@ -1,5 +1,5 @@
 {
     "board": "arduino:avr:uno",
     "port": "/dev/ttyACM0",
-    "sketch": "Skittle_Sorter.ino"
+    "sketch": "Skittle_Sorter/Skittle_Sorter.ino"
 }

@@ -24,7 +24,7 @@
 //  and display the values
 //
 
-#include<Servo.h>
+#include <Servo.h>
 
 //  Declaring our Servos
 Servo feedingServo;

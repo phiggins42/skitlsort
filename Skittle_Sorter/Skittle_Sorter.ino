@@ -1,3 +1,5 @@
+#include <Servo.h>
+
 //  Skittle_sorter
 
 //  James & John Rinkel
@@ -5,8 +7,6 @@
 
 //  A program to sort Skittles by color
 //  and send the color to a second Arduino for display on an LCD
-
-#include<Servo.h>
 
 //Define the pins of the color sensor
 #define s0  2   //S0  pin of the sensor on Arduino pin#2 
@@ -28,6 +28,7 @@ Servo decisionServo;
 #define mediumDelay     30
 #define bigDelay      1000
 #define veryBigDelay  2000
+#define startupDelay    5
 
 //
 //  FILL THIS SET OF VALUES WITH THE NUMBERS FROM THE
@@ -49,6 +50,19 @@ Servo decisionServo;
 #define feedingServoPin 9
 #define decisionServoPin 11
 
+const int distinctRGB[22][3] = {{255, 255, 255},{0,0,0},{128,0,0},{255,0,0},{255, 200, 220},{170, 110, 40},{255, 150, 0},{255, 215, 180},{128, 128, 0},{255, 235, 0},{255, 250, 200},{190, 255, 0},{0, 190, 0},{170, 255, 195},{0, 0, 128},{100, 255, 255},{0, 0, 128},{67, 133, 255},{130, 0, 150},{230, 190, 255},{255, 0, 255},{128, 128, 128}};
+const String distinctColors[22] = {"white","black","maroon","red","pink","brown","orange","coral","olive","yellow","beige","lime","green","mint","teal","cyan","navy","blue","purple","lavender","magenta","grey"};
+String closestColor(int r,int g,int b) {
+  String colorReturn = "NA";
+  int biggestDifference = 1000;
+  for (int i = 0; i < 22; i++) {
+    if (sqrt(pow(r - distinctRGB[i][0],2) + pow(g - distinctRGB[i][1],2) + pow(b - distinctRGB[i][2],2)) < biggestDifference) {
+      colorReturn = distinctColors[i];
+      biggestDifference = sqrt(pow(r - distinctRGB[i][0],2) + pow(g - distinctRGB[i][1],2) + pow(b - distinctRGB[i][2],2));
+    }
+  }
+  return colorReturn;
+}
 //
 //  FILL THIS SET OF VALUES WITH THE NUMBERS FROM THE
 //  Skittle_Color_Calibration
@@ -56,6 +70,7 @@ Servo decisionServo;
  
 // initializing range array for checking values
 // redLowrange, redHighrange, greenLowrange, greenHighrange, blueLowrange, blueHighrange, clearLowrange, clearHighrange
+String colorIFound = "";
 
 byte colorValues[5][8] = {
          { 99, 172, 84,  91, 38, 39,  99, 137},  // Red
@@ -97,12 +112,13 @@ bool checkRange();
 
 void setup()
   {
-//Set the pins of the Color Sensor
-  pinMode (s0,OUTPUT);
-  pinMode (s1,OUTPUT);
-  pinMode (s2,OUTPUT);
-  pinMode (s3,OUTPUT);
-  pinMode (sOut,INPUT);
+  //Set the pins of the Color Sensor
+  pinMode(s0, OUTPUT);
+  pinMode(s1, OUTPUT);
+  pinMode(s2, OUTPUT);
+  pinMode(s3, OUTPUT);
+  pinMode(sOut, INPUT);
+
 
 //  The pins S0 & S1 used for frequency scaling
 //    S0  S1
@@ -112,39 +128,42 @@ void setup()
 //    H - H = 100%
 //
   
-//Setting frequency
+  //Setting frequency
   digitalWrite(s0, HIGH);
   digitalWrite(s1, LOW);
 
-//Attaching the Servos
-  feedingServo.attach (feedingServoPin);
+  //Attaching the Servos
+  feedingServo.attach(feedingServoPin);
   decisionServo.attach(decisionServoPin);
 
-//Set the serial communication in bytes per second for the serial 
-//monitor and the link to the second arduino
+  //Set the serial communication in bytes per second for the serial 
+  //monitor and the link to the second arduino
   Serial.begin(9600);
 
-// position the feeder and decision servos initially
-
-// feeder servo half way between pos1 and pos2
+  // position the feeder and decision servos initially
+  // feeder servo half way between pos1 and pos2
   byte tempPos = (((pos1FeederServo - pos2FeederServo) / 2) + pos2FeederServo);
-  feedingServo.write (tempPos);
+  feedingServo.write(tempPos);
   
-// decision servo at the green bucket
+  // decision servo at the green bucket
   decisionServo.write (decisionServo_GREEN);
 
-// wait 15 seconds to allow loading of skittles
-  Serial.println("waiting for setup of skittles");
-  for (int x=1; x<=15; x++)
-    {
-      delay(bigDelay);
-      Serial.print(".");
-    }
-    Serial.println();
+  // wait 15 seconds to allow loading of skittles
+  Serial.println("Waiting for setup of skittles");
+  for (int x=1; x<=startupDelay; x++) {
+    delay(bigDelay);
+    Serial.print(".");
+  }
+  Serial.println();
+
 }
 
 void loop()
   {
+
+
+  Serial.println("------WAT------");
+  Serial.println(closestColor(230, 10, 10));
 // show moving feeder servo
 //>>>  Serial.println("moving feeder to sensor position");
     
@@ -260,14 +279,14 @@ void  scanTheColor()
   pinVal1 = 0;
   pinVal2 = 0;
     
-  for (byte x = 0; x < 4; x++)  // read the four values RED/GREEN/BLUE/CLEAR
-    {
-//>>>    Serial.print("pinVal1=");
-//>>>    Serial.print(pinVal1);
-//>>>    Serial.print("  ");
-//>>>    Serial.print("pinVal2=");
-//>>>    Serial.print(pinVal2);
-//>>>    Serial.print("    ");
+  for (byte x = 0; x < 4; x++) {
+    // read the four values RED/GREEN/BLUE/CLEAR
+    // Serial.print("pinVal1=");
+    // Serial.print(pinVal1);
+    // Serial.print("  ");
+    // Serial.print("pinVal2=");
+    // Serial.print(pinVal2);
+    // Serial.print("    ");
       
     digitalWrite(s2, pinVal1);
     digitalWrite(s3, pinVal2);
@@ -275,16 +294,19 @@ void  scanTheColor()
     tempColor = 0;  // clear temp variable to hold the total of all the sensor values
     zColor = 0;     // clear the variable to hold the sensor value
     
+    Serial.print("Z=");
     for (byte y = 0; y < scanCnt; y++)
     {
       zColor = pulseIn(sOut, LOW);
-//>>>      Serial.print("Z=");
-//>>>      Serial.println(zColor);
+      
+      Serial.print(zColor);
+      Serial.print(", ");
       tempColor = tempColor + zColor;
-//>>>      Serial.print("Temp=");
-//>>>      Serial.println(tempColor);
+      // Serial.print("Temp=");
+      // Serial.println(tempColor);
       delay(smallDelay);
     }
+    Serial.println("");
 
     sensorValue[x] = tempColor >> bitShift;
         
@@ -301,6 +323,16 @@ void  scanTheColor()
 
     delay(smallDelay);
     }
+
+    // sensorValue[0], 1, 2, 3
+    Serial.print(sensorValue[0]); Serial.print(", ");
+    Serial.print(sensorValue[1]); Serial.print(", ");
+    Serial.print(sensorValue[2]);Serial.print(", ");
+    colorIFound = closestColor(sensorValue[0], sensorValue[1], sensorValue[2]);
+    Serial.println("------------------------------------------");
+    Serial.println(colorIFound);
+        Serial.println();
+    // RIGHT HERE
   }
 ////////////////////////////////////////////////////////////////////////////////
 //
