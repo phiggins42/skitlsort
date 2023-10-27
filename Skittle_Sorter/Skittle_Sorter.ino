@@ -47,15 +47,15 @@ Servo decisionServo;
 
 // used to store self calibrated color what color
 const String colorMap[3] = {"red", "green", "blue"};
-int colorFrequencies[3][2] = { 
-         { 1000, 0 }, // Red
-         { 1000, 0 }, // Green
-         { 1000, 0 }, // Blue
+int colorFrequencies[3][4] = { 
+         { 1000, 0, LOW, LOW }, // Red
+         { 1000, 0, HIGH, HIGH }, // Green
+         { 1000, 0, LOW, HIGH }, // Blue
 };
 
 // prototyping functions
 String identifyTheColor();
-int scanTheColor(String color, int pin2level, int pin3level);
+int scanTheColor(String color);
 int searchIndex(String tlist[], String value);
 
 void setup() {
@@ -157,15 +157,15 @@ void loop() {
 //
 //////////////////////////////////////////////////////////////////////////////////////////
 
-int scanTheColor(String color, int pin2level, int pin3level) {
-  // Setting RED (R) filtered photodiodes to be read
-  digitalWrite(s2, pin2level);
-  digitalWrite(s3, pin3level);
+int scanTheColor(String color) {
+  int colorIndex = searchIndex(colorMap, color);
+
+  // set photodiodes to correct low/high level
+  digitalWrite(s2, colorFrequencies[colorIndex][2]);
+  digitalWrite(s3, colorFrequencies[colorIndex][3]);
   
   // Reading the output frequency
   int colorFrequency = pulseIn(sOut, LOW);
-
-  int colorIndex = searchIndex(colorMap, color);
 
   // self calibrate for incoming color
   colorFrequencies[colorIndex][0] = min(colorFrequency, colorFrequencies[colorIndex][0]);
@@ -195,9 +195,9 @@ int scanTheColor(String color, int pin2level, int pin3level) {
 ////////////////////////////////////////////////////////////////////////////////
 
 String identifyTheColor() {
-  int r = scanTheColor("red", LOW, LOW);
-  int g = scanTheColor("green", HIGH, HIGH);
-  int b = scanTheColor("blue", LOW, HIGH);
+  int r = scanTheColor("red");
+  int g = scanTheColor("green");
+  int b = scanTheColor("blue");
 
   const int distinctRGB[22][3] = {{255, 255, 255},{0,0,0},{128,0,0},{255,0,0},{255, 200, 220},{170, 110, 40},{255, 150, 0},{255, 215, 180},{128, 128, 0},{255, 235, 0},{255, 250, 200},{190, 255, 0},{0, 190, 0},{170, 255, 195},{0, 0, 128},{100, 255, 255},{0, 0, 128},{67, 133, 255},{130, 0, 150},{230, 190, 255},{255, 0, 255},{128, 128, 128}};
   const String distinctColors[22] = {"white","black","maroon","red","pink","brown","orange","coral","olive","yellow","beige","lime","green","mint","teal","cyan","navy","blue","purple","lavender","magenta","grey"};
