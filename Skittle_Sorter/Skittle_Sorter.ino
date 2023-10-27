@@ -46,17 +46,15 @@ Servo decisionServo;
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
 // used to store self calibrated color what color
-const String colorMap[3] = {"red", "green", "blue"};
-int colorFrequencies[3][4] = { 
-         { 1000, 0, LOW, LOW }, // Red
-         { 1000, 0, HIGH, HIGH }, // Green
-         { 1000, 0, LOW, HIGH }, // Blue
+int colorFrequencies[3][5] = { 
+         { "red", LOW, LOW, 1000, 0 },
+         { "green", HIGH, HIGH, 1000, 0 },
+         { "blue", LOW, HIGH, 1000, 0 },
 };
 
 // prototyping functions
 String identifyTheColor();
-int scanTheColor(String color);
-int searchIndex(String tlist[], String value);
+int scanTheColor(int colorIndex);
 
 void setup() {
   //Set the pins of the Color Sensor
@@ -157,32 +155,30 @@ void loop() {
 //
 //////////////////////////////////////////////////////////////////////////////////////////
 
-int scanTheColor(String color) {
-  int colorIndex = searchIndex(colorMap, color);
-
+int scanTheColor(int colorIndex) {
   // set photodiodes to correct low/high level
-  digitalWrite(s2, colorFrequencies[colorIndex][2]);
-  digitalWrite(s3, colorFrequencies[colorIndex][3]);
+  digitalWrite(s2, colorFrequencies[colorIndex][1]);
+  digitalWrite(s3, colorFrequencies[colorIndex][2]);
   
   // Reading the output frequency
   int colorFrequency = pulseIn(sOut, LOW);
 
   // self calibrate for incoming color
-  colorFrequencies[colorIndex][0] = min(colorFrequency, colorFrequencies[colorIndex][0]);
-  colorFrequencies[colorIndex][1] = max(colorFrequency, colorFrequencies[colorIndex][1]);
+  colorFrequencies[colorIndex][3] = min(colorFrequency, colorFrequencies[colorIndex][3]);
+  colorFrequencies[colorIndex][4] = max(colorFrequency, colorFrequencies[colorIndex][4]);
 
   // Remaping the value of the RED (R) frequency from 0 to 255
   // You must replace with your own values. Here's an example: 
   // check out https://randomnerdtutorials.com/arduino-color-sensor-tcs230-tcs3200/ for how map() is used
-  int theColor = map(colorFrequency, colorFrequencies[colorIndex][0], colorFrequencies[colorIndex][1], 255, 0);
+  int theColor = map(colorFrequency, colorFrequencies[colorIndex][3], colorFrequencies[colorIndex][4], 255, 0);
 
   // Printing the RED (R) value
-  Serial.print(color);
-  Serial.print("=(");
+  Serial.print(colorFrequencies[colorIndex][0]);
+  Serial.print("=");
   Serial.print(colorFrequency);
   Serial.print("/");
   Serial.print(theColor);
-  Serial.print(") ");
+  Serial.print(" ");
 
   delay(100);
   return theColor;
@@ -195,9 +191,9 @@ int scanTheColor(String color) {
 ////////////////////////////////////////////////////////////////////////////////
 
 String identifyTheColor() {
-  int r = scanTheColor("red");
-  int g = scanTheColor("green");
-  int b = scanTheColor("blue");
+  int r = scanTheColor(0); // red
+  int g = scanTheColor(1); // green
+  int b = scanTheColor(2); // blue
 
   const int distinctRGB[22][3] = {{255, 255, 255},{0,0,0},{128,0,0},{255,0,0},{255, 200, 220},{170, 110, 40},{255, 150, 0},{255, 215, 180},{128, 128, 0},{255, 235, 0},{255, 250, 200},{190, 255, 0},{0, 190, 0},{170, 255, 195},{0, 0, 128},{100, 255, 255},{0, 0, 128},{67, 133, 255},{130, 0, 150},{230, 190, 255},{255, 0, 255},{128, 128, 128}};
   const String distinctColors[22] = {"white","black","maroon","red","pink","brown","orange","coral","olive","yellow","beige","lime","green","mint","teal","cyan","navy","blue","purple","lavender","magenta","grey"};
@@ -211,12 +207,4 @@ String identifyTheColor() {
     }
   }
   return colorReturn;
-}
-
-int searchIndex(String tlist[], String value) {
-  for (int i=0; i<=sizeof(tlist); i++)
-    if (tlist[i] == value) 
-      return i;
-
-  return -1;
 }
