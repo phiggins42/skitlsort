@@ -46,7 +46,8 @@ Servo decisionServo;
 #define MIN(a,b) (((a)<(b))?(a):(b))
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
-// used to store self calibrated color what color
+// used to store self calibrated color
+// the order is: s2 level, s3 level, low frequency, high frequency
 int colorFrequencies[3][5] = {
   { LOW, LOW, 1000, 0 }, // red=0
   { HIGH, HIGH, 1000, 0 }, // green=1
@@ -58,7 +59,7 @@ String identifyTheColor();
 int scanTheColor(int colorIndex, bool calibrate);
 
 void setup() {
-  //Set the pins of the Color Sensor
+  // Set the pins of the Color Sensor
   pinMode(s0, OUTPUT);
   pinMode(s1, OUTPUT);
   pinMode(s2, OUTPUT);
