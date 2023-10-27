@@ -15,12 +15,11 @@
 #define s3  5   //S3  pin of the sensor on Arduino pin#5
 #define sOut 6  //Out pin of the sensor on Arduino pin#6 
 
-
-//Declaring Servos
+// Declaring Servos
 Servo feedingServo;
 Servo decisionServo;
 
-//Declaring general delays
+// Declaring general delays
 #define smallDelay       5
 #define mediumDelay     30
 #define bigDelay      1000
@@ -59,32 +58,8 @@ int greenHighFrequency = 0;
 int blueLowFrequency = 1000;
 int blueHighFrequency = 0;
 
-// Match the closest named color to a passed R G B value set
-String closestColor(int r, int g, int b) {
-  const int distinctRGB[22][3] = {{255, 255, 255},{0,0,0},{128,0,0},{255,0,0},{255, 200, 220},{170, 110, 40},{255, 150, 0},{255, 215, 180},{128, 128, 0},{255, 235, 0},{255, 250, 200},{190, 255, 0},{0, 190, 0},{170, 255, 195},{0, 0, 128},{100, 255, 255},{0, 0, 128},{67, 133, 255},{130, 0, 150},{230, 190, 255},{255, 0, 255},{128, 128, 128}};
-  const String distinctColors[22] = {"white","black","maroon","red","pink","brown","orange","coral","olive","yellow","beige","lime","green","mint","teal","cyan","navy","blue","purple","lavender","magenta","grey"};
-
-  String colorReturn = "NA";
-  int biggestDifference = 1000;
-  for (int i = 0; i < 22; i++) {
-    if (sqrt(pow(r - distinctRGB[i][0],2) + pow(g - distinctRGB[i][1],2) + pow(b - distinctRGB[i][2],2)) < biggestDifference) {
-      colorReturn = distinctColors[i];
-      biggestDifference = sqrt(pow(r - distinctRGB[i][0],2) + pow(g - distinctRGB[i][1],2) + pow(b - distinctRGB[i][2],2));
-    }
-  }
-  return colorReturn;
-}
-
-//
-//  FILL THIS SET OF VALUES WITH THE NUMBERS FROM THE
-//  Skittle_Color_Calibration
-//
- 
-// initializing range array for checking values
-// redLowrange, redHighrange, greenLowrange, greenHighrange, blueLowrange, blueHighrange, clearLowrange, clearHighrange
-String colorIFound = "";
-
 // prototyping functions
+String closestColor(int r, int g, int b);
 String scanTheColor();
 
 void setup() {
@@ -97,15 +72,7 @@ void setup() {
   // Setting the sensorOut as an input
   pinMode(sOut, INPUT);
 
-  //  The pins S0 & S1 used for frequency scaling
-  //    S0  S1
-  //    L - L = Power Down
-  //    L - H = 2%
-  //    H - L = 20%
-  //    H - H = 100%
-  //
-  
-  //Setting frequency
+  // Setting frequency scaling to 20% per docs
   digitalWrite(s0, HIGH);
   digitalWrite(s1, LOW);
 
@@ -116,7 +83,6 @@ void setup() {
   //Set the serial communication in bytes per second for the serial 
   //monitor and the link to the second arduino
   Serial.begin(9600);
-
 
   // position the feeder and decision servos initially
   // feeder servo half way between pos1 and pos2
@@ -263,4 +229,20 @@ String scanTheColor() {
   delay(100);
 
   return closestColor(redColor, greenColor, blueColor);
+}
+
+// Match the closest named color to a passed R G B value set
+String closestColor(int r, int g, int b) {
+  const int distinctRGB[22][3] = {{255, 255, 255},{0,0,0},{128,0,0},{255,0,0},{255, 200, 220},{170, 110, 40},{255, 150, 0},{255, 215, 180},{128, 128, 0},{255, 235, 0},{255, 250, 200},{190, 255, 0},{0, 190, 0},{170, 255, 195},{0, 0, 128},{100, 255, 255},{0, 0, 128},{67, 133, 255},{130, 0, 150},{230, 190, 255},{255, 0, 255},{128, 128, 128}};
+  const String distinctColors[22] = {"white","black","maroon","red","pink","brown","orange","coral","olive","yellow","beige","lime","green","mint","teal","cyan","navy","blue","purple","lavender","magenta","grey"};
+
+  String colorReturn = "NA";
+  int biggestDifference = 1000;
+  for (int i = 0; i < 22; i++) {
+    if (sqrt(pow(r - distinctRGB[i][0],2) + pow(g - distinctRGB[i][1],2) + pow(b - distinctRGB[i][2],2)) < biggestDifference) {
+      colorReturn = distinctColors[i];
+      biggestDifference = sqrt(pow(r - distinctRGB[i][0],2) + pow(g - distinctRGB[i][1],2) + pow(b - distinctRGB[i][2],2));
+    }
+  }
+  return colorReturn;
 }
