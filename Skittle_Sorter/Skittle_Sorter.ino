@@ -59,7 +59,7 @@ int blueLowFrequency = 1000;
 int blueHighFrequency = 0;
 
 // prototyping functions
-String closestColor(int r, int g, int b);
+String identifyTheColor(int r, int g, int b);
 String scanTheColor();
 
 void setup() {
@@ -228,11 +228,17 @@ String scanTheColor() {
   Serial.println(" ");
   delay(100);
 
-  return closestColor(redColor, greenColor, blueColor);
+  return identifyTheColor(redColor, greenColor, blueColor);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+//
+// check to see if the values scanned match a color of skittle
+//
+////////////////////////////////////////////////////////////////////////////////
+
 // Match the closest named color to a passed R G B value set
-String closestColor(int r, int g, int b) {
+String identifyTheColor(int r, int g, int b) {
   const int distinctRGB[22][3] = {{255, 255, 255},{0,0,0},{128,0,0},{255,0,0},{255, 200, 220},{170, 110, 40},{255, 150, 0},{255, 215, 180},{128, 128, 0},{255, 235, 0},{255, 250, 200},{190, 255, 0},{0, 190, 0},{170, 255, 195},{0, 0, 128},{100, 255, 255},{0, 0, 128},{67, 133, 255},{130, 0, 150},{230, 190, 255},{255, 0, 255},{128, 128, 128}};
   const String distinctColors[22] = {"white","black","maroon","red","pink","brown","orange","coral","olive","yellow","beige","lime","green","mint","teal","cyan","navy","blue","purple","lavender","magenta","grey"};
 
