@@ -26,10 +26,6 @@ Servo decisionServo;
 #define veryBigDelay  2000
 #define startupDelay    5
 
-//
-//  FILL THIS SET OF VALUES WITH THE NUMBERS FROM THE
-//  Skittle_Servo_Setup
-//
 // defining position of the feedingServo
 #define pos1FeederServo 168 // get skittle position
 #define pos2FeederServo 104 // scan skittle position
@@ -50,17 +46,17 @@ Servo decisionServo;
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
 // used to store self calibrated color what color
-// TODO turn this into an array?
-int redLowFrequency = 1000;
-int redHighFrequency = 0;
-int greenLowFrequency = 1000;
-int greenHighFrequency = 0;
-int blueLowFrequency = 1000;
-int blueHighFrequency = 0;
+const String colorMap[3] = {"red", "green", "blue"};
+int colorFrequencies[3][2] = { 
+         { 1000, 0 }, // Red
+         { 1000, 0 }, // Green
+         { 1000, 0 }, // Blue
+};
 
 // prototyping functions
-String identifyTheColor(int r, int g, int b);
-String scanTheColor();
+String identifyTheColor();
+int scanTheColor(String color, int pin2level, int pin3level);
+int searchIndex(String tlist[], String value);
 
 void setup() {
   //Set the pins of the Color Sensor
@@ -111,7 +107,8 @@ void loop() {
   delay(bigDelay);
 
   // scan the color using the sensor to get red, blue, green & clear values
-  String color = scanTheColor();
+  String color = identifyTheColor();
+  Serial.print(" color=");
   Serial.println(color);
 
   // I guess switch statements don't work with colors
@@ -159,76 +156,36 @@ void loop() {
 //  read the sensor to get the red, green, blue & clear values nd store in scannedValue array
 //
 //////////////////////////////////////////////////////////////////////////////////////////
-String scanTheColor() {
+
+int scanTheColor(String color, int pin2level, int pin3level) {
   // Setting RED (R) filtered photodiodes to be read
-  digitalWrite(s2, LOW);
-  digitalWrite(s3, LOW);
+  digitalWrite(s2, pin2level);
+  digitalWrite(s3, pin3level);
   
   // Reading the output frequency
-  int redFrequency = pulseIn(sOut, LOW);
+  int colorFrequency = pulseIn(sOut, LOW);
 
-  // self adjust for red
-  redLowFrequency = min(redFrequency, redLowFrequency);
-  redHighFrequency = max(redFrequency, redHighFrequency);
-  
+  int colorIndex = searchIndex(colorMap, color);
+
+  // self calibrate for incoming color
+  colorFrequencies[colorIndex][0] = min(colorFrequency, colorFrequencies[colorIndex][0]);
+  colorFrequencies[colorIndex][1] = max(colorFrequency, colorFrequencies[colorIndex][1]);
+
   // Remaping the value of the RED (R) frequency from 0 to 255
   // You must replace with your own values. Here's an example: 
   // check out https://randomnerdtutorials.com/arduino-color-sensor-tcs230-tcs3200/ for how map() is used
-  int redColor = map(redFrequency, redLowFrequency, redHighFrequency, 255, 0);
-  
-   // Printing the RED (R) value
-  Serial.print("RF = ");
-  Serial.print(redFrequency);
-  Serial.print(" RC = ");
-  Serial.print(redColor);
+  int theColor = map(colorFrequency, colorFrequencies[colorIndex][0], colorFrequencies[colorIndex][1], 255, 0);
+
+  // Printing the RED (R) value
+  Serial.print(color);
+  Serial.print("=(");
+  Serial.print(colorFrequency);
+  Serial.print("/");
+  Serial.print(theColor);
+  Serial.print(") ");
+
   delay(100);
-  
-  // Setting GREEN (G) filtered photodiodes to be read
-  digitalWrite(s2, HIGH);
-  digitalWrite(s3, HIGH);
-  
-  // Reading the output frequency
-  int greenFrequency = pulseIn(sOut, LOW);
-
-  // self adjust for green
-  greenLowFrequency = min(greenFrequency, greenLowFrequency);
-  greenHighFrequency = max(greenFrequency, greenHighFrequency);
-
-  // Remaping the value of the GREEN (G) frequency from 0 to 255
-  // You must replace with your own values. Here's an example: 
-  int greenColor = map(greenFrequency, greenLowFrequency, greenHighFrequency, 255, 0);
-
-  // Printing the GREEN (G) value  
-  Serial.print(" GF = ");
-  Serial.print(greenFrequency);
-  Serial.print(" GC = ");
-  Serial.print(greenColor);
-  delay(100);
- 
-  // Setting BLUE (B) filtered photodiodes to be read
-  digitalWrite(s2, LOW);
-  digitalWrite(s3, HIGH);
-  
-  // Reading the output frequency
-  int blueFrequency = pulseIn(sOut, LOW);
-
-  // self adjust for blue
-  blueLowFrequency = min(blueFrequency, blueLowFrequency);
-  blueHighFrequency = max(blueFrequency, blueHighFrequency);
-
-  // Remaping the value of the BLUE (B) frequency from 0 to 255
-  // You must replace with your own values. Here's an example: 
-  int blueColor = map(blueFrequency, blueLowFrequency, blueHighFrequency, 255, 0);
-
-  // Printing the BLUE (B) value 
-  Serial.print(" BF = ");
-  Serial.print(blueFrequency);
-  Serial.print(" BC = ");
-  Serial.print(blueColor);
-  Serial.println(" ");
-  delay(100);
-
-  return identifyTheColor(redColor, greenColor, blueColor);
+  return theColor;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -237,8 +194,11 @@ String scanTheColor() {
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-// Match the closest named color to a passed R G B value set
-String identifyTheColor(int r, int g, int b) {
+String identifyTheColor() {
+  int r = scanTheColor("red", LOW, LOW);
+  int g = scanTheColor("green", HIGH, HIGH);
+  int b = scanTheColor("blue", LOW, HIGH);
+
   const int distinctRGB[22][3] = {{255, 255, 255},{0,0,0},{128,0,0},{255,0,0},{255, 200, 220},{170, 110, 40},{255, 150, 0},{255, 215, 180},{128, 128, 0},{255, 235, 0},{255, 250, 200},{190, 255, 0},{0, 190, 0},{170, 255, 195},{0, 0, 128},{100, 255, 255},{0, 0, 128},{67, 133, 255},{130, 0, 150},{230, 190, 255},{255, 0, 255},{128, 128, 128}};
   const String distinctColors[22] = {"white","black","maroon","red","pink","brown","orange","coral","olive","yellow","beige","lime","green","mint","teal","cyan","navy","blue","purple","lavender","magenta","grey"};
 
@@ -251,4 +211,12 @@ String identifyTheColor(int r, int g, int b) {
     }
   }
   return colorReturn;
+}
+
+int searchIndex(String tlist[], String value) {
+  for (int i=0; i<=sizeof(tlist); i++)
+    if (tlist[i] == value) 
+      return i;
+
+  return -1;
 }
