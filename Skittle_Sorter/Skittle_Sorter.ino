@@ -48,9 +48,9 @@ Servo decisionServo;
 
 // used to store self calibrated color what color
 int colorFrequencies[3][5] = {
-         { LOW, LOW, 1000, 0 }, // red=0
-         { HIGH, HIGH, 1000, 0 }, // green=1
-         { LOW, HIGH, 1000, 0 }, // blue=2
+  { LOW, LOW, 1000, 0 }, // red=0
+  { HIGH, HIGH, 1000, 0 }, // green=1
+  { LOW, HIGH, 1000, 0 }, // blue=2
 };
 
 // prototyping functions
@@ -79,25 +79,29 @@ void setup() {
   //monitor and the link to the second arduino
   Serial.begin(9600);
 
-  // calibrate red color
-  Serial.println("Calibrating red...");
-  feedingServo.write(0);
-  delay(veryBigDelay*2);
-  scanTheColor(0, true);
+  // I wrapped my feeding servo disk with red, green and blue strips. On startup, it calibrates itself.
+  // I also had good luck by scanning a white piece of paper, and a black piece of paper. Both are required before color detection works properly.
+  // I'll show you my color disk in person.
 
-  Serial.println("Calibrating green...");
-  // calibrate green color
-  feedingServo.write(35);
-  delay(veryBigDelay*2);
-  scanTheColor(1, true);
+  // // calibrate red color
+  // Serial.println("Calibrating red...");
+  // feedingServo.write(0);
+  // delay(veryBigDelay*2);
+  // scanTheColor(0, true);
 
-  Serial.println("Calibrating blue...");
-  // calibrate blue color
-  feedingServo.write(75);
-  delay(veryBigDelay*2);
-  scanTheColor(2, true);
+  // Serial.println("Calibrating green...");
+  // // calibrate green color
+  // feedingServo.write(35);
+  // delay(veryBigDelay*2);
+  // scanTheColor(1, true);
 
-  Serial.println("Calibration complete");
+  // Serial.println("Calibrating blue...");
+  // // calibrate blue color
+  // feedingServo.write(75);
+  // delay(veryBigDelay*2);
+  // scanTheColor(2, true);
+
+  // Serial.println("Calibration complete");
 
   // position the feeder and decision servos initially
   // feeder servo half way between pos1 and pos2
