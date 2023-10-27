@@ -64,8 +64,6 @@ void setup() {
   pinMode(s1, OUTPUT);
   pinMode(s2, OUTPUT);
   pinMode(s3, OUTPUT);
-
-  // Setting the sensorOut as an input
   pinMode(sOut, INPUT);
 
   // Setting frequency scaling to 20% per docs
@@ -77,7 +75,7 @@ void setup() {
   decisionServo.attach(decisionServoPin);
 
   // Set the serial communication in bytes per second for the serial 
-  //monitor and the link to the second arduino
+  // monitor and the link to the second arduino
   Serial.begin(9600);
 
   // I wrapped my feeding servo disk with red, green and blue strips. On startup, it calibrates itself.
@@ -112,7 +110,6 @@ void setup() {
   // wait 15 seconds to allow loading of skittles
   Serial.print("Please load some skittles");
 
-  // TODO - this phase could be used to self calibrate - the idea is that the rotating disc would have black, white strips for it to scan!
   for (int x=1; x<=startupDelay; x++) {
     delay(bigDelay);
     Serial.print(".");
@@ -128,7 +125,7 @@ void loop() {
     delay(mediumDelay);
   }
 
-  //Delay to stabilize readings
+  // Delay to stabilize readings
   delay(bigDelay);
 
   // scan the color using the sensor to get red, blue, green & clear values
