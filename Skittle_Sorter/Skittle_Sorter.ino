@@ -24,12 +24,12 @@ Servo decisionServo;
 #define mediumDelay     30
 #define bigDelay      1000
 #define veryBigDelay  2000
-#define startupDelay    5
+#define startupDelay     5
 
 // defining position of the feedingServo
-#define pos1FeederServo 168 // get skittle position
-#define pos2FeederServo 104 // scan skittle position
-#define pos3FeederServo   6  // drop skittle position
+#define pos1FeederServo 165 // get skittle position
+#define pos2FeederServo 110 // scan skittle position
+#define pos3FeederServo  15  // drop skittle position
 
 // defining position of the decisionServo
 #define decisionServo_RED       4   // red skittle bucket position
@@ -46,15 +46,15 @@ Servo decisionServo;
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
 // used to store self calibrated color what color
-int colorFrequencies[3][5] = { 
-         { "red", LOW, LOW, 1000, 0 },
-         { "green", HIGH, HIGH, 1000, 0 },
-         { "blue", LOW, HIGH, 1000, 0 },
+int colorFrequencies[3][5] = {
+         { "red", LOW, LOW, 1000, 0 }, // red=0
+         { "green", HIGH, HIGH, 1000, 0 }, // green=1
+         { "blue", LOW, HIGH, 1000, 0 }, // blue=2
 };
 
 // prototyping functions
 String identifyTheColor();
-int scanTheColor(int colorIndex);
+int scanTheColor(int colorIndex, bool calibrate);
 
 void setup() {
   //Set the pins of the Color Sensor
@@ -70,17 +70,40 @@ void setup() {
   digitalWrite(s0, HIGH);
   digitalWrite(s1, LOW);
 
-  //Attaching the Servos
+  // Attaching the Servos
   feedingServo.attach(feedingServoPin);
   decisionServo.attach(decisionServoPin);
 
-  //Set the serial communication in bytes per second for the serial 
+  // Set the serial communication in bytes per second for the serial 
   //monitor and the link to the second arduino
   Serial.begin(9600);
 
+  // calibrate red color
+  Serial.println("Calibrating red...");
+  feedingServo.write(0);
+  delay(veryBigDelay);
+  delay(veryBigDelay);
+  scanTheColor(0, true);
+
+  Serial.println("Calibrating green...");
+  // calibrate green color
+  feedingServo.write(35);
+  delay(veryBigDelay);
+  delay(veryBigDelay);
+  scanTheColor(1, true);
+
+  Serial.println("Calibrating blue...");
+  // calibrate blue color
+  feedingServo.write(75);
+  delay(veryBigDelay);
+  delay(veryBigDelay);
+  scanTheColor(2, true);
+
+  Serial.println("Calibration complete");
+
   // position the feeder and decision servos initially
   // feeder servo half way between pos1 and pos2
-  feedingServo.write(((pos1FeederServo - pos2FeederServo) / 2) + pos2FeederServo); 
+  feedingServo.write(pos1FeederServo); 
   decisionServo.write(decisionServo_GREEN);
 
   // wait 15 seconds to allow loading of skittles
@@ -91,7 +114,7 @@ void setup() {
     delay(bigDelay);
     Serial.print(".");
   }
-  
+
   Serial.println();
 }
 
@@ -125,7 +148,7 @@ void loop() {
   } else {
     Serial.println("Did not identify any color, dumping in purple bucket");
     Serial.println();
-    decisionServo.write (decisionServo_PURPLE);
+    decisionServo.write(decisionServo_PURPLE);
   }
 
   // Delay before moving to exit position
@@ -156,7 +179,7 @@ void loop() {
 //
 //////////////////////////////////////////////////////////////////////////////////////////
 
-int scanTheColor(int colorIndex) {
+int scanTheColor(int colorIndex, bool calibrate) {
   // set photodiodes to correct low/high level
   digitalWrite(s2, colorFrequencies[colorIndex][1]);
   digitalWrite(s3, colorFrequencies[colorIndex][2]);
@@ -165,13 +188,28 @@ int scanTheColor(int colorIndex) {
   int colorFrequency = pulseIn(sOut, LOW);
 
   // self calibrate for incoming color
-  colorFrequencies[colorIndex][3] = min(colorFrequency, colorFrequencies[colorIndex][3]);
-  colorFrequencies[colorIndex][4] = max(colorFrequency, colorFrequencies[colorIndex][4]);
+  // if (calibrate) {
+      colorFrequencies[colorIndex][3] = min(colorFrequency, colorFrequencies[colorIndex][3]);
+      colorFrequencies[colorIndex][4] = max(colorFrequency, colorFrequencies[colorIndex][4]);
+  // }
 
   // Remaping the value of the RED (R) frequency from 0 to 255
   // You must replace with your own values. Here's an example: 
   // check out https://randomnerdtutorials.com/arduino-color-sensor-tcs230-tcs3200/ for how map() is used
   int theColor = map(colorFrequency, colorFrequencies[colorIndex][3], colorFrequencies[colorIndex][4], 255, 0);
+  Serial.print("colorIndex=");
+  Serial.print(colorIndex);
+  Serial.print(", color=");
+  Serial.print(colorFrequencies[colorIndex][0]);
+  Serial.print(", s2=");
+  Serial.print(colorFrequencies[colorIndex][1]);
+  Serial.print(", s3=");
+  Serial.print(colorFrequencies[colorIndex][2]);
+  Serial.print(", low=");
+  Serial.print(colorFrequencies[colorIndex][3]);
+  Serial.print(", high=");
+  Serial.println(colorFrequencies[colorIndex][4]);
+
 
   // Printing the RED (R) value
   Serial.print(colorFrequencies[colorIndex][0]);
@@ -192,9 +230,9 @@ int scanTheColor(int colorIndex) {
 ////////////////////////////////////////////////////////////////////////////////
 
 String identifyTheColor() {
-  int r = scanTheColor(0); // red
-  int g = scanTheColor(1); // green
-  int b = scanTheColor(2); // blue
+  int r = scanTheColor(0, false); // red
+  int g = scanTheColor(1, false); // green
+  int b = scanTheColor(2, false); // blue
 
   const int distinctRGB[22][3] = {{255, 255, 255},{0,0,0},{128,0,0},{255,0,0},{255, 200, 220},{170, 110, 40},{255, 150, 0},{255, 215, 180},{128, 128, 0},{255, 235, 0},{255, 250, 200},{190, 255, 0},{0, 190, 0},{170, 255, 195},{0, 0, 128},{100, 255, 255},{0, 0, 128},{67, 133, 255},{130, 0, 150},{230, 190, 255},{255, 0, 255},{128, 128, 128}};
   const String distinctColors[22] = {"white","black","maroon","red","pink","brown","orange","coral","olive","yellow","beige","lime","green","mint","teal","cyan","navy","blue","purple","lavender","magenta","grey"};
