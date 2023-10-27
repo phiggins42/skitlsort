@@ -47,9 +47,9 @@ Servo decisionServo;
 
 // used to store self calibrated color what color
 int colorFrequencies[3][5] = {
-         { "red", LOW, LOW, 1000, 0 }, // red=0
-         { "green", HIGH, HIGH, 1000, 0 }, // green=1
-         { "blue", LOW, HIGH, 1000, 0 }, // blue=2
+         { LOW, LOW, 1000, 0 }, // red=0
+         { HIGH, HIGH, 1000, 0 }, // green=1
+         { LOW, HIGH, 1000, 0 }, // blue=2
 };
 
 // prototyping functions
@@ -130,24 +130,28 @@ void loop() {
 
   // scan the color using the sensor to get red, blue, green & clear values
   String color = identifyTheColor();
-  Serial.print(" color=");
-  Serial.println(color);
 
   // I guess switch statements don't work with colors
   // TODO - this should be an array lookup for the servo position
   if (color == "red") {
-    decisionServo.write (decisionServo_RED);    // move the slide to the red bucket
+    decisionServo.write(decisionServo_RED);    // move the slide to the red bucket
+    Serial.println("Dropping to red bucket!");
   } else if (color == "yellow") {
-    decisionServo.write (decisionServo_YELLOW);
-  } else if (color == "green") {
-    decisionServo.write (decisionServo_GREEN);
+    Serial.println("Dropping to red bucket!");
+    decisionServo.write(decisionServo_YELLOW);
+  } else if (color == "green" || color == "mint") {
+    Serial.println("Dropping to green bucket!");
+    decisionServo.write(decisionServo_GREEN);
   } else if (color == "orange") {
-    decisionServo.write (decisionServo_ORANGE);
+    Serial.println("Dropping to orange bucket!");
+    decisionServo.write(decisionServo_ORANGE);
   } else if (color == "purple") {
-    decisionServo.write (decisionServo_PURPLE);
+    Serial.println("Dropping to purple bucket!");
+    decisionServo.write(decisionServo_PURPLE);
   } else {
-    Serial.println("Did not identify any color, dumping in purple bucket");
-    Serial.println();
+    Serial.print("Unknown color \"");
+    Serial.print(color);
+    Serial.println("\"... Dropping into purple bucket");
     decisionServo.write(decisionServo_PURPLE);
   }
 
@@ -181,43 +185,31 @@ void loop() {
 
 int scanTheColor(int colorIndex, bool calibrate) {
   // set photodiodes to correct low/high level
-  digitalWrite(s2, colorFrequencies[colorIndex][1]);
-  digitalWrite(s3, colorFrequencies[colorIndex][2]);
+  digitalWrite(s2, colorFrequencies[colorIndex][0]);
+  digitalWrite(s3, colorFrequencies[colorIndex][1]);
   
   // Reading the output frequency
   int colorFrequency = pulseIn(sOut, LOW);
 
   // self calibrate for incoming color
   // if (calibrate) {
-      colorFrequencies[colorIndex][3] = min(colorFrequency, colorFrequencies[colorIndex][3]);
-      colorFrequencies[colorIndex][4] = max(colorFrequency, colorFrequencies[colorIndex][4]);
+      colorFrequencies[colorIndex][2] = min(colorFrequency, colorFrequencies[colorIndex][2]);
+      colorFrequencies[colorIndex][3] = max(colorFrequency, colorFrequencies[colorIndex][3]);
   // }
 
   // Remaping the value of the RED (R) frequency from 0 to 255
   // You must replace with your own values. Here's an example: 
   // check out https://randomnerdtutorials.com/arduino-color-sensor-tcs230-tcs3200/ for how map() is used
-  int theColor = map(colorFrequency, colorFrequencies[colorIndex][3], colorFrequencies[colorIndex][4], 255, 0);
-  Serial.print("colorIndex=");
-  Serial.print(colorIndex);
-  Serial.print(", color=");
-  Serial.print(colorFrequencies[colorIndex][0]);
-  Serial.print(", s2=");
-  Serial.print(colorFrequencies[colorIndex][1]);
-  Serial.print(", s3=");
-  Serial.print(colorFrequencies[colorIndex][2]);
-  Serial.print(", low=");
-  Serial.print(colorFrequencies[colorIndex][3]);
-  Serial.print(", high=");
-  Serial.println(colorFrequencies[colorIndex][4]);
-
+  int theColor = map(colorFrequency, colorFrequencies[colorIndex][2], colorFrequencies[colorIndex][3], 255, 0);
 
   // Printing the RED (R) value
-  Serial.print(colorFrequencies[colorIndex][0]);
-  Serial.print("=");
-  Serial.print(colorFrequency);
-  Serial.print("/");
-  Serial.print(theColor);
-  Serial.print(" ");
+  // Serial.print("color ");
+  // Serial.print(colorIndex);
+  // Serial.print(": freq/dec=");
+  // Serial.print(colorFrequency);
+  // Serial.print("/");
+  // Serial.print(theColor);
+  // Serial.print(" ");
 
   delay(100);
   return theColor;
