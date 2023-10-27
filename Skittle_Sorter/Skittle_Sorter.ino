@@ -1,6 +1,7 @@
 #include <Servo.h>
 
 //  Skittle_sorter
+// check out https://randomnerdtutorials.com/arduino-color-sensor-tcs230-tcs3200/ for how map() is used
 
 //  James & John Rinkel
 //  7/15/2023
@@ -28,7 +29,7 @@ Servo decisionServo;
 
 // defining position of the feedingServo
 #define pos1FeederServo 165 // get skittle position
-#define pos2FeederServo 110 // scan skittle position
+#define pos2FeederServo 112 // scan skittle position
 #define pos3FeederServo  15  // drop skittle position
 
 // defining position of the decisionServo
@@ -81,22 +82,19 @@ void setup() {
   // calibrate red color
   Serial.println("Calibrating red...");
   feedingServo.write(0);
-  delay(veryBigDelay);
-  delay(veryBigDelay);
+  delay(veryBigDelay*2);
   scanTheColor(0, true);
 
   Serial.println("Calibrating green...");
   // calibrate green color
   feedingServo.write(35);
-  delay(veryBigDelay);
-  delay(veryBigDelay);
+  delay(veryBigDelay*2);
   scanTheColor(1, true);
 
   Serial.println("Calibrating blue...");
   // calibrate blue color
   feedingServo.write(75);
-  delay(veryBigDelay);
-  delay(veryBigDelay);
+  delay(veryBigDelay*2);
   scanTheColor(2, true);
 
   Serial.println("Calibration complete");
@@ -131,22 +129,22 @@ void loop() {
   // scan the color using the sensor to get red, blue, green & clear values
   String color = identifyTheColor();
 
-  // I guess switch statements don't work with colors
+  // Seems like guess switch statements don't work with strings
   // TODO - this should be an array lookup for the servo position
   if (color == "red") {
     decisionServo.write(decisionServo_RED);    // move the slide to the red bucket
-    Serial.println("Dropping to red bucket!");
+    Serial.println("Dropping into red bucket!");
   } else if (color == "yellow") {
-    Serial.println("Dropping to red bucket!");
+    Serial.println("Dropping into yellow bucket!");
     decisionServo.write(decisionServo_YELLOW);
   } else if (color == "green" || color == "mint") {
-    Serial.println("Dropping to green bucket!");
+    Serial.println("Dropping into green bucket!");
     decisionServo.write(decisionServo_GREEN);
   } else if (color == "orange") {
-    Serial.println("Dropping to orange bucket!");
+    Serial.println("Dropping into orange bucket!");
     decisionServo.write(decisionServo_ORANGE);
   } else if (color == "purple") {
-    Serial.println("Dropping to purple bucket!");
+    Serial.println("Dropping into purple bucket!");
     decisionServo.write(decisionServo_PURPLE);
   } else {
     Serial.print("Unknown color \"");
@@ -197,12 +195,10 @@ int scanTheColor(int colorIndex, bool calibrate) {
       colorFrequencies[colorIndex][3] = max(colorFrequency, colorFrequencies[colorIndex][3]);
   // }
 
-  // Remaping the value of the RED (R) frequency from 0 to 255
-  // You must replace with your own values. Here's an example: 
-  // check out https://randomnerdtutorials.com/arduino-color-sensor-tcs230-tcs3200/ for how map() is used
+  // remaping the value of the frequency from 0 to 255
   int theColor = map(colorFrequency, colorFrequencies[colorIndex][2], colorFrequencies[colorIndex][3], 255, 0);
 
-  // Printing the RED (R) value
+  // Print the frequency and color values
   // Serial.print("color ");
   // Serial.print(colorIndex);
   // Serial.print(": freq/dec=");
