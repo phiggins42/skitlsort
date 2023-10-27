@@ -84,13 +84,14 @@ void setup() {
   decisionServo.write(decisionServo_GREEN);
 
   // wait 15 seconds to allow loading of skittles
-  Serial.println("Waiting for setup of skittles");
+  Serial.print("Please load some skittles");
 
   // TODO - this phase could be used to self calibrate - the idea is that the rotating disc would have black, white strips for it to scan!
   for (int x=1; x<=startupDelay; x++) {
     delay(bigDelay);
     Serial.print(".");
   }
+  
   Serial.println();
 }
 
