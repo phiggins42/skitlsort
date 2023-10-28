@@ -43,9 +43,6 @@ Servo decisionServo;
 #define feedingServoPin 9
 #define decisionServoPin 11
 
-#define MIN(a,b) (((a)<(b))?(a):(b))
-#define MAX(a,b) (((a)>(b))?(a):(b))
-
 // used to store self calibrated color
 // the order is: s2 level, s3 level, low frequency, high frequency
 int colorFrequencies[3][5] = {
