@@ -79,25 +79,25 @@ void setup() {
   // I also had success scanning a white and black piece of paper.
   // Either one is required before color detection works properly. I'll show you my color disk in person.
 
-  // // calibrate red color
-  // Serial.println("Calibrating red...");
-  // feedingServo.write(0);
-  // delay(veryBigDelay*2);
-  // scanTheColor(0, true);
+  // calibrate red color
+  Serial.println("Calibrating red...");
+  feedingServo.write(0);
+  delay(veryBigDelay*2);
+  scanTheColor(0, true);
 
-  // Serial.println("Calibrating green...");
-  // // calibrate green color
-  // feedingServo.write(35);
-  // delay(veryBigDelay*2);
-  // scanTheColor(1, true);
+  // calibrate green color
+  Serial.println("Calibrating green...");
+  feedingServo.write(35);
+  delay(veryBigDelay*2);
+  scanTheColor(1, true);
 
-  // Serial.println("Calibrating blue...");
-  // // calibrate blue color
-  // feedingServo.write(75);
-  // delay(veryBigDelay*2);
-  // scanTheColor(2, true);
+  // calibrate blue color
+  Serial.println("Calibrating blue...");
+  feedingServo.write(75);
+  delay(veryBigDelay*2);
+  scanTheColor(2, true);
 
-  // Serial.println("Calibration complete");
+  Serial.println("Calibration complete");
 
   // position the feeder and decision servos initially
   // feeder servo half way between pos1 and pos2
@@ -167,11 +167,11 @@ void loop() {
   // Return the Feeding Servo to initial (get skittle position)
   for (int i = pos3FeederServo; i < pos1FeederServo ; i++) {
     feedingServo.write(i);
-    delay (smallDelay);
+    delay(smallDelay);
   }
 
   // delay before getting another skittle
-  delay (veryBigDelay);  
+  delay(veryBigDelay);  
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
