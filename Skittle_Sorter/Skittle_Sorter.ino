@@ -55,8 +55,8 @@ int colorFrequencies[3][5] = {
 };
 
 // prototyping functions
-String identifyTheColor();
 int scanTheColor(int colorIndex, bool calibrate);
+String identifyTheColor();
 
 void setup() {
   // Set the pins of the Color Sensor
@@ -79,8 +79,8 @@ void setup() {
   Serial.begin(9600);
 
   // I wrapped my feeding servo disk with red, green and blue strips. On startup, it calibrates itself.
-  // I also had good luck by scanning a white piece of paper, and a black piece of paper. Both are required before color detection works properly.
-  // I'll show you my color disk in person.
+  // I also had success scanning a white and black piece of paper.
+  // Either one is required before color detection works properly. I'll show you my color disk in person.
 
   // // calibrate red color
   // Serial.println("Calibrating red...");
@@ -131,7 +131,7 @@ void loop() {
   // scan the color using the sensor to get red, blue, green & clear values
   String color = identifyTheColor();
 
-  // Seems like guess switch statements don't work with strings
+  // Seems like switch statements don't work with strings
   // TODO - this should be an array lookup for the servo position
   if (color == "red") {
     decisionServo.write(decisionServo_RED);    // move the slide to the red bucket
@@ -179,7 +179,7 @@ void loop() {
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //
-//  read the sensor to get the red, green, blue & clear values nd store in scannedValue array
+//  read the sensor to get the red, green, blue & clear values and store in scannedValue array
 //
 //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -197,7 +197,7 @@ int scanTheColor(int colorIndex, bool calibrate) {
       colorFrequencies[colorIndex][3] = max(colorFrequency, colorFrequencies[colorIndex][3]);
   // }
 
-  // remaping the value of the frequency from 0 to 255
+  // remap the frequency to a 0 - 255 value
   int theColor = map(colorFrequency, colorFrequencies[colorIndex][2], colorFrequencies[colorIndex][3], 255, 0);
 
   // Print the frequency and color values
