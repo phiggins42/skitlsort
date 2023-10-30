@@ -115,34 +115,52 @@ void setup() {
   Serial.println();
 }
 
+void moveServo(Servo theServo, int fromPos, int toPos) {
+  Serial.println("Asking to move servo: Start");
+
+  if (toPos < fromPos) {
+    Serial.println("Asking to move servo: Ascending");
+    for (int i = fromPos; i > toPos; i--) {
+      theServo.write(i);
+      delay(mediumDelay);
+    }
+  } else {
+    Serial.println("Asking to move servo: Descending");
+
+    for (int i = fromPos; i < toPos; i++) {
+      theServo.write(i);
+      delay(smallDelay);
+    }
+  }
+    Serial.println("Asking to move servo: Done");
+}
+
 void loop() {
   // Write "steps" of 1 degree to the servo until pos2 (Sensor position)
-  for (int i = pos1FeederServo; i > pos2FeederServo ; i--) {
-    feedingServo.write(i);
-    delay(mediumDelay);
-  }
+  moveServo(feedingServo, pos1FeederServo, pos2FeederServo);
 
   // Delay to stabilize readings
   delay(bigDelay);
 
   // scan the color using the sensor to get red, blue, green & clear values
   String color = identifyTheColor();
+  delay(bigDelay);
 
   // Seems like switch statements don't work with strings
   // TODO - this should be an array lookup for the servo position
   if (color == "red") {
     decisionServo.write(decisionServo_RED);    // move the slide to the red bucket
     Serial.println("Dropping into red bucket!");
-  } else if (color == "yellow") {
+  } else if (color == "yellow" || color == "coral") {
     Serial.println("Dropping into yellow bucket!");
     decisionServo.write(decisionServo_YELLOW);
-  } else if (color == "green" || color == "mint") {
+  } else if (color == "green" || color == "mint" || color == "olive") {
     Serial.println("Dropping into green bucket!");
     decisionServo.write(decisionServo_GREEN);
   } else if (color == "orange") {
     Serial.println("Dropping into orange bucket!");
     decisionServo.write(decisionServo_ORANGE);
-  } else if (color == "purple") {
+  } else if (color == "purple" || color == "brown") {
     Serial.println("Dropping into purple bucket!");
     decisionServo.write(decisionServo_PURPLE);
   } else {
@@ -155,20 +173,14 @@ void loop() {
   // Delay before moving to exit position
   delay(bigDelay);
 
-  // Move Feeding servo to exit (drop position)  
-  for (int i = pos2FeederServo; i > pos3FeederServo; i--) {
-    feedingServo.write(i);
-    delay(mediumDelay);
-  }
+  // Move Feeding servo to exit (drop position)
+  moveServo(feedingServo, pos2FeederServo, pos3FeederServo);
  
   // Delay before returning feeder to the get skittle position
   delay(bigDelay);
 
   // Return the Feeding Servo to initial (get skittle position)
-  for (int i = pos3FeederServo; i < pos1FeederServo ; i++) {
-    feedingServo.write(i);
-    delay(smallDelay);
-  }
+  moveServo(feedingServo, pos3FeederServo, pos1FeederServo);
 
   // delay before getting another skittle
   delay(veryBigDelay);  
